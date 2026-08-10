@@ -146,6 +146,29 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ── Telegram Banner ── */
+        .tg-banner {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: linear-gradient(135deg, #2AABEE, #229ED9);
+            color: #ffffff; text-decoration: none;
+            padding: 12px 20px; border-radius: var(--radius-md);
+            font-size: 15px; font-weight: 600;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(42, 171, 238, 0.3);
+            transition: var(--transition);
+            animation: pulse-tg 2s infinite;
+        }
+        .tg-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(42, 171, 238, 0.4);
+            animation: none;
+        }
+        @keyframes pulse-tg {
+            0% { box-shadow: 0 0 0 0 rgba(42, 171, 238, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(42, 171, 238, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(42, 171, 238, 0); }
+        }
+
         /* ── Result View ── */
         .back-btn {
             display: inline-flex; align-items: center; gap: 8px;
@@ -525,6 +548,26 @@
             display: flex; align-items: center; justify-content: center;
             color: var(--text-muted);
         }
+        
+        .pm-slider {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+            width: 100%; height: 100%;
+        }
+        .pm-slider::-webkit-scrollbar { display: none; }
+        .pm-slide {
+            flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start;
+        }
+        .pm-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pm-slider-dots {
+            position: absolute; bottom: 12px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 6px; z-index: 2; pointer-events: none;
+        }
+        .pm-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4); transition: var(--transition);
+        }
+        .pm-dot.active { background: #fff; transform: scale(1.2); }
 
         .pm-body { padding: 20px 20px 28px; }
         .pm-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
@@ -605,6 +648,12 @@
             <div id="searchView" class="view active">
                 <div class="card">
                     <div class="brand">WSTORE</div>
+                    <a href="https://t.me/wstoreru" class="tg-banner" target="_blank" rel="noopener">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-17.6 7.077c-.943.376-1.018 1.15-.17 1.472l4.631 1.774 10.96-7.14c.483-.332.964-.132.585.197l-9.06 8.358-.33 5.093c.484 0 .708-.224.981-.487l2.355-2.296 4.887 3.65c.9.5 1.545.244 1.765-.826l3.193-15.045c.29-1.205-.445-1.782-1.175-1.54Z"/>
+                        </svg>
+                        Мы в Telegram
+                    </a>
                     <h1>Отслеживание посылки</h1>
                     <p class="subtitle">Введите трек-номер для проверки статуса</p>
                     <form id="searchForm" class="search-form" autocomplete="off">
@@ -1103,8 +1152,11 @@
                 }
                 return true;
             }).sort(([, a], [, b]) => {
-                // In stock first, then by createdAt desc
+                // In stock first, then sortOrder ascending, then createdAt desc
                 if ((a.inStock === false) !== (b.inStock === false)) return (a.inStock === false) ? 1 : -1;
+                const orderA = a.sortOrder || 0;
+                const orderB = b.sortOrder || 0;
+                if (orderA !== orderB) return orderA - orderB;
                 return (b.createdAt || 0) - (a.createdAt || 0);
             });
 
@@ -1122,11 +1174,13 @@
                 // Image wrap
                 const imgWrap = document.createElement('div');
                 imgWrap.className = 'pc-img-wrap';
+                
+                const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : p.imageUrl;
 
-                if (p.imageUrl) {
+                if (imgUrl) {
                     const img = document.createElement('img');
                     img.className = 'pc-img';
-                    img.src = p.imageUrl;
+                    img.src = imgUrl;
                     img.alt = p.name;
                     img.loading = 'lazy';
                     imgWrap.appendChild(img);
@@ -1213,13 +1267,27 @@
             const discount = p.oldPrice && p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
             const sizes = (p.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
             const isOOS = p.inStock === false;
+            
+            const images = p.images || (p.imageUrl ? [p.imageUrl] : []);
+            let imageHtml = '';
+            if (images.length === 0) {
+                imageHtml = `<div class="pm-img-placeholder"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
+            } else if (images.length === 1) {
+                imageHtml = `<img class="pm-img" src="${images[0]}" alt="${escHtml(p.name)}">`;
+            } else {
+                imageHtml = `
+                    <div class="pm-slider" id="pmSlider">
+                        ${images.map(url => `<div class="pm-slide"><img src="${url}" alt="${escHtml(p.name)}"></div>`).join('')}
+                    </div>
+                    <div class="pm-slider-dots" id="pmSliderDots">
+                        ${images.map((_, i) => `<div class="pm-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+                    </div>
+                `;
+            }
 
             pmContent.innerHTML = `
                 <div class="pm-img-wrap">
-                    ${p.imageUrl
-                        ? `<img class="pm-img" src="${p.imageUrl}" alt="${escHtml(p.name)}">`
-                        : `<div class="pm-img-placeholder"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
-                    }
+                    ${imageHtml}
                 </div>
                 <div class="pm-body">
                     <div class="pm-name">${escHtml(p.name || '')}</div>
@@ -1280,6 +1348,17 @@
                     );
                     window.open(`https://t.me/ruletkaman?text=${text}`, '_blank');
                 });
+            }
+            
+            if (images.length > 1) {
+                const slider = pmContent.querySelector('#pmSlider');
+                const dots = pmContent.querySelectorAll('.pm-dot');
+                if (slider && dots.length > 0) {
+                    slider.addEventListener('scroll', () => {
+                        const idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+                        dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
+                    });
+                }
             }
 
             productModalOverlay.classList.add('active');

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WSTORE | Отслеживание посылки</title>
-    <meta name="description" content="Отследите статус вашей посылки WSTORE в реальном времени">
+    <title>WSTORE | Отслеживание & Магазин</title>
+    <meta name="description" content="Отследите статус вашей посылки WSTORE и просматривайте каталог товаров">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -40,16 +40,31 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-base);
-            background-image:
-                radial-gradient(ellipse at 50% 0%, rgba(200, 167, 80, 0.04) 0%, transparent 60%),
-                radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-base) 100%);
             color: var(--text-primary);
             min-height: 100vh;
+            display: block;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Tracker section ── */
+        .tracker-section {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            -webkit-font-smoothing: antialiased;
+            padding: 40px 24px 48px;
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(200, 167, 80, 0.05) 0%, transparent 65%),
+                radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-base) 100%);
+            position: relative;
+        }
+        .tracker-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-default), transparent);
         }
 
         .app { width: 100%; max-width: 560px; }
@@ -155,39 +170,28 @@
         .timeline { position: relative; padding-left: 28px; }
 
         .timeline-item {
-            position: relative;
-            padding-left: 20px;
-            opacity: 0;
-            transform: translateX(-8px);
+            position: relative; padding-left: 20px;
+            opacity: 0; transform: translateX(-8px);
             animation: itemIn 0.4s ease-out forwards;
         }
         @keyframes itemIn { to { opacity: 1; transform: translateX(0); } }
 
-        /* Dynamic line between dots — rendered via inline style height */
         .tl-line-track {
-            position: absolute;
-            left: -1px;
-            top: 20px;
-            width: 2px;
-            border-radius: 1px;
-            overflow: hidden;
+            position: absolute; left: -1px; top: 20px;
+            width: 2px; border-radius: 1px; overflow: hidden;
             background: var(--border-light);
         }
         .tl-line-fill {
-            position: absolute;
-            top: 0; left: 0; right: 0;
+            position: absolute; top: 0; left: 0; right: 0;
             transition: height 0.8s ease;
         }
 
-        /* Dot */
         .tl-dot {
-            position: absolute;
-            left: -8px; top: 4px;
+            position: absolute; left: -8px; top: 4px;
             width: 16px; height: 16px;
             border-radius: 50%; z-index: 2;
         }
 
-        /* ── Status: completed ── */
         .timeline-item.completed .tl-dot {
             background: var(--success);
             border: 3px solid var(--success);
@@ -195,7 +199,6 @@
         }
         .timeline-item.completed .tl-line-fill { background: var(--success); }
 
-        /* ── Status: active ── */
         .timeline-item.active .tl-dot {
             background: var(--accent);
             border: 3px solid var(--accent);
@@ -209,7 +212,6 @@
             50%       { box-shadow: 0 0 0 8px rgba(200, 167, 80, 0); transform: scale(1.25); }
         }
 
-        /* ── Status: pending ── */
         .timeline-item.pending .tl-dot {
             background: var(--bg-card);
             border: 2px solid var(--border-light);
@@ -226,7 +228,6 @@
         .timeline-item.pending .cp-title,
         .timeline-item.pending .cp-date { color: var(--text-muted); }
 
-        /* Content */
         .cp-content { padding-bottom: 0; }
         .cp-title { font-size: 15px; font-weight: 500; line-height: 1.4; transition: var(--transition); }
         .cp-emoji { margin-right: 6px; }
@@ -259,74 +260,443 @@
             text-align: center; margin-top: 24px;
             font-size: 12px; color: var(--text-muted); letter-spacing: 0.04em;
         }
+
+        /* ══════════════════════════════════════════════════════
+           SHOP STOREFRONT
+        ══════════════════════════════════════════════════════ */
+
+        .shop-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 16px 72px;
+        }
+
+        .shop-header {
+            margin-bottom: 28px;
+        }
+        .shop-title {
+            font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+        .shop-divider {
+            width: 32px; height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+            margin-top: 10px;
+        }
+        .shop-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+        /* Category filter chips */
+        .category-filters {
+            display: flex; gap: 8px; flex-wrap: nowrap;
+            margin-bottom: 14px;
+            overflow-x: auto; padding-bottom: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .category-filters::-webkit-scrollbar { display: none; }
+        .cat-chip {
+            padding: 8px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-default);
+            border-radius: 24px;
+            font-size: 13px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .cat-chip:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .cat-chip.active {
+            background: var(--accent-dim);
+            border-color: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        /* Size filters */
+        .size-filters {
+            display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 22px;
+        }
+        .size-chip {
+            padding: 6px 13px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            font-size: 12px; font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .size-chip:hover { border-color: var(--border-light); color: var(--text-secondary); }
+        .size-chip.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Products Grid — strictly 2 columns on mobile */
+        .products-grid-client {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        @media (min-width: 560px) {
+            .products-grid-client { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        }
+        @media (min-width: 900px) {
+            .products-grid-client { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        }
+        @media (min-width: 1100px) {
+            .products-grid-client { grid-template-columns: repeat(5, 1fr); gap: 20px; }
+        }
+
+        /* Product card */
+        .product-card-client {
+            background: var(--bg-card);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+        .product-card-client:hover {
+            border-color: var(--border-light);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 36px rgba(0,0,0,0.45);
+        }
+        .product-card-client:active { transform: translateY(0); }
+
+        .pc-img-wrap {
+            position: relative;
+            aspect-ratio: 3/4;
+            overflow: hidden;
+            background: var(--bg-elevated);
+        }
+        .pc-img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.45s ease;
+            display: block;
+        }
+        .product-card-client:hover .pc-img { transform: scale(1.05); }
+        .pc-img-placeholder {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+        }
+
+        /* Badge on photo */
+        .pc-badge {
+            position: absolute;
+            top: 8px; left: 8px;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.04em;
+            display: flex; align-items: center; gap: 4px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .pc-badge.hit { background: rgba(220,60,20,0.82); color: #fff; }
+        .pc-badge.sale { background: rgba(40,200,110,0.82); color: #001a0a; }
+        .pc-badge.new { background: rgba(200,167,80,0.88); color: #0a0a0a; }
+
+        /* OOS overlay */
+        .pc-oos-overlay {
+            position: absolute; inset: 0;
+            background: rgba(8,8,10,0.62);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--text-muted);
+            letter-spacing: 0.08em;
+        }
+
+        /* Card body */
+        .pc-body { padding: 10px 11px 14px; }
+        .pc-price-row {
+            display: flex; align-items: baseline; gap: 5px;
+            margin-bottom: 4px; flex-wrap: wrap;
+        }
+        .pc-price {
+            font-size: 16px; font-weight: 800; color: var(--text-primary);
+            letter-spacing: -0.4px; line-height: 1;
+        }
+        .pc-old-price {
+            font-size: 12px; color: var(--text-muted);
+            text-decoration: line-through; line-height: 1;
+        }
+        .pc-discount {
+            font-size: 10px; font-weight: 700;
+            background: rgba(61,214,140,0.15);
+            color: var(--success);
+            padding: 2px 5px; border-radius: 4px;
+        }
+        .pc-name {
+            font-size: 12px; color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .pc-rating-row {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px;
+        }
+        .pc-rating-val { color: var(--text-secondary); font-weight: 600; }
+        .pc-reviews { color: var(--text-muted); }
+        .star-icon { flex-shrink: 0; }
+
+        /* Empty */
+        .shop-empty {
+            text-align: center; padding: 64px 24px;
+            color: var(--text-muted); font-size: 15px;
+        }
+
+        /* ══ Product Detail Modal ══ */
+        .product-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 200;
+            display: flex; align-items: flex-end;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        @media (min-width: 600px) {
+            .product-modal-overlay { align-items: center; justify-content: center; }
+        }
+        .product-modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .product-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            width: 100%;
+            max-height: 93vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        @media (min-width: 600px) {
+            .product-modal {
+                border-radius: var(--radius-lg);
+                max-width: 480px;
+                transform: scale(0.92) translateY(16px);
+                max-height: 88vh;
+            }
+        }
+        .product-modal-overlay.active .product-modal { transform: translateY(0); }
+        @media (min-width: 600px) {
+            .product-modal-overlay.active .product-modal { transform: scale(1) translateY(0); }
+        }
+
+        /* Drag handle */
+        .pm-handle {
+            width: 36px; height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            margin: 14px auto 0;
+        }
+        @media (min-width: 600px) { .pm-handle { display: none; } }
+
+        .pm-close {
+            position: absolute; top: 12px; right: 12px;
+            width: 32px; height: 32px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-muted);
+            transition: var(--transition); z-index: 2;
+            font-family: inherit;
+        }
+        .pm-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+        .pm-img-wrap { position: relative; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-elevated); }
+        .pm-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pm-img-placeholder {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .pm-body { padding: 20px 20px 28px; }
+        .pm-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+        .pm-cat { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+
+        .pm-price-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .pm-price { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; }
+        .pm-old-price { font-size: 16px; color: var(--text-muted); text-decoration: line-through; }
+        .pm-discount {
+            font-size: 13px; font-weight: 700;
+            background: rgba(61,214,140,0.15);
+            color: var(--success); padding: 3px 9px; border-radius: 6px;
+        }
+
+        .pm-rating-row {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 14px; margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        .pm-sizes-label {
+            font-size: 12px; color: var(--text-muted);
+            font-weight: 600; letter-spacing: 0.06em;
+            text-transform: uppercase; margin-bottom: 10px;
+        }
+        .pm-sizes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+        .pm-size-btn {
+            padding: 10px 18px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            font-size: 14px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer; transition: var(--transition);
+            font-family: inherit; min-width: 52px; text-align: center;
+        }
+        .pm-size-btn:hover { border-color: var(--accent-glow); color: var(--text-primary); }
+        .pm-size-btn.selected {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Telegram order button */
+        .pm-order-btn {
+            width: 100%; height: 54px;
+            background: var(--accent);
+            color: #0a0a0a;
+            border: none; border-radius: var(--radius-md);
+            font-family: inherit; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            letter-spacing: 0.01em;
+        }
+        .pm-order-btn:hover { background: var(--accent-light); transform: scale(1.01); box-shadow: 0 6px 20px var(--accent-glow); }
+        .pm-order-btn:active { transform: scale(0.98); }
+        .pm-order-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .pm-no-size-hint {
+            font-size: 12px; color: var(--error);
+            margin-top: 8px; text-align: center; display: none;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- Search View -->
-        <div id="searchView" class="view active">
-            <div class="card">
-                <div class="brand">WSTORE</div>
-                <h1>Отслеживание посылки</h1>
-                <p class="subtitle">Введите трек-номер для проверки статуса</p>
-                <form id="searchForm" class="search-form" autocomplete="off">
-                    <div class="input-wrapper">
-                        <input
-                            type="text"
-                            id="trackInput"
-                            class="search-input"
-                            placeholder="Трек-номер"
-                            aria-label="Трек-номер"
-                            inputmode="numeric"
-                            required
-                        >
-                    </div>
-                    <button type="submit" class="search-btn" id="searchBtn" aria-label="Найти">
-                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="7"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+
+    <!-- Tracker section -->
+    <div class="tracker-section">
+        <div class="app">
+            <!-- Search View -->
+            <div id="searchView" class="view active">
+                <div class="card">
+                    <div class="brand">WSTORE</div>
+                    <h1>Отслеживание посылки</h1>
+                    <p class="subtitle">Введите трек-номер для проверки статуса</p>
+                    <form id="searchForm" class="search-form" autocomplete="off">
+                        <div class="input-wrapper">
+                            <input
+                                type="text"
+                                id="trackInput"
+                                class="search-input"
+                                placeholder="Трек-номер"
+                                aria-label="Трек-номер"
+                                inputmode="numeric"
+                                required
+                            >
+                        </div>
+                        <button type="submit" class="search-btn" id="searchBtn" aria-label="Найти">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <div class="spinner" id="searchSpinner"></div>
+                        </button>
+                    </form>
+                </div>
+                <div class="footer">Powered by WSTORE Tracking</div>
+            </div>
+
+            <!-- Result View -->
+            <div id="resultView" class="view">
+                <div class="card">
+                    <button class="back-btn" id="backBtn" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
-                        <div class="spinner" id="searchSpinner"></div>
+                        Назад
                     </button>
-                </form>
-            </div>
-            <div class="footer">Powered by WSTORE Tracking</div>
-        </div>
-
-        <!-- Result View -->
-        <div id="resultView" class="view">
-            <div class="card">
-                <button class="back-btn" id="backBtn" type="button">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                    Назад
-                </button>
-                <div class="track-info">
-                    <div class="track-label">Трек-номер</div>
-                    <div class="track-number" id="displayTrackNumber"></div>
-                </div>
-                <div class="timeline" id="timelineContainer"></div>
-            </div>
-        </div>
-
-        <!-- Error View -->
-        <div id="errorView" class="view">
-            <div class="card">
-                <div class="error-content">
-                    <div class="error-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
+                    <div class="track-info">
+                        <div class="track-label">Трек-номер</div>
+                        <div class="track-number" id="displayTrackNumber"></div>
                     </div>
-                    <div class="error-title">Заказ не найден</div>
-                    <div class="error-message">Проверьте правильность трек-номера и попробуйте снова</div>
-                    <button class="retry-btn" id="retryBtn" type="button">Попробовать снова</button>
+                    <div class="timeline" id="timelineContainer"></div>
                 </div>
             </div>
+
+            <!-- Error View -->
+            <div id="errorView" class="view">
+                <div class="card">
+                    <div class="error-content">
+                        <div class="error-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                        <div class="error-title">Заказ не найден</div>
+                        <div class="error-message">Проверьте правильность трек-номера и попробуйте снова</div>
+                        <button class="retry-btn" id="retryBtn" type="button">Попробовать снова</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Storefront -->
+    <div class="shop-section" id="shopSection" style="display:none">
+        <div class="shop-header">
+            <div class="shop-title">Каталог товаров</div>
+            <div class="shop-divider"></div>
+            <div class="shop-subtitle">Выберите товар и оформите заказ через Telegram</div>
+        </div>
+
+        <div class="category-filters" id="categoryFilters">
+            <button class="cat-chip active" data-cat="all">Все</button>
+        </div>
+
+        <div class="size-filters" id="sizeFilters" style="display:none"></div>
+
+        <div class="products-grid-client" id="clientProductsGrid"></div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="product-modal-overlay" id="productModalOverlay">
+        <div class="product-modal" id="productModal">
+            <div class="pm-handle"></div>
+            <button class="pm-close" id="pmClose" aria-label="Закрыть">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div id="pmContent"></div>
         </div>
     </div>
 
@@ -368,7 +738,6 @@
         //   STATUS LOGIC — mirrors admin logic
         // ══════════════════════════════════════════
 
-        /** Normalize Firebase checkpoints object → sorted array */
         function parseCps(raw) {
             if (!raw) return [];
             if (Array.isArray(raw)) return raw.filter(Boolean);
@@ -376,30 +745,16 @@
             return keys.map(k => raw[k]).filter(Boolean);
         }
 
-        /** Returns today as 'YYYY-MM-DD' */
         function todayISO() {
             return new Date().toISOString().slice(0, 10);
         }
 
-        /**
-         * Compute status for each checkpoint.
-         * Rules:
-         *   1. manualOverride >= 0 → hard-lock to that index
-         *   2. Compare today to dateStart / dateEnd:
-         *      - past end → completed
-         *      - within range → active
-         *      - before start → pending
-         *      - no dates → pending (unless first)
-         *   3. If nothing active → last completed becomes active
-         *   4. If still nothing → first cp becomes active
-         */
         function computeStatuses(cps, order) {
             const statuses = cps.map(() => 'pending');
             if (cps.length === 0) return statuses;
 
             const override = typeof order.manualOverride === 'number' && order.manualOverride >= 0
-                ? order.manualOverride
-                : -1;
+                ? order.manualOverride : -1;
 
             if (override >= 0) {
                 const idx = Math.min(override, cps.length - 1);
@@ -416,26 +771,17 @@
                 const start = cp.dateStart || null;
                 const end   = cp.dateEnd   || cp.dateStart || null;
                 if (!start) { statuses[i] = 'pending'; return; }
-
-                if (today > end) {
-                    statuses[i] = 'completed';
-                    lastCompletedIdx = i;
-                } else if (today >= start && today <= end) {
-                    statuses[i] = 'active';
-                    activeIdx = i;
-                } else {
-                    statuses[i] = 'pending';
-                }
+                if (today > end) { statuses[i] = 'completed'; lastCompletedIdx = i; }
+                else if (today >= start && today <= end) { statuses[i] = 'active'; activeIdx = i; }
+                else { statuses[i] = 'pending'; }
             });
 
-            // Promote last completed to active if no active found
             if (activeIdx === -1 && lastCompletedIdx >= 0) {
                 activeIdx = lastCompletedIdx;
                 statuses[activeIdx] = 'active';
                 for (let i = 0; i < activeIdx; i++) statuses[i] = 'completed';
             }
 
-            // Fallback: first cp with dates, or first cp
             if (activeIdx === -1) {
                 const firstWithDate = cps.findIndex(cp => cp.dateStart);
                 const fallback = firstWithDate >= 0 ? firstWithDate : 0;
@@ -445,32 +791,20 @@
             return statuses;
         }
 
-        /**
-         * Progress fill (0..1) within the active step's date range.
-         * Used for visual line fill.
-         */
         function computeFill(cp, status) {
             if (status === 'completed') return 1.0;
             if (status === 'pending')   return 0.0;
-
             const start = cp.dateStart;
             const end   = cp.dateEnd || cp.dateStart;
             if (!start || !end || start === end) return 0.5;
-
             const startMs = new Date(start + 'T00:00:00').getTime();
             const endMs   = new Date(end   + 'T00:00:00').getTime();
             const nowMs   = Date.now();
-
             if (nowMs <= startMs) return 0;
             if (nowMs >= endMs)   return 1;
             return (nowMs - startMs) / (endMs - startMs);
         }
 
-        /**
-         * Beautiful date range for display.
-         * '2026-08-01' + '2026-08-20' → '1 авг — 20 авг'
-         * No hours/minutes exposed.
-         */
         function fmtDate(iso) {
             if (!iso) return '';
             const d = new Date(iso + 'T00:00:00');
@@ -507,7 +841,6 @@
 
         function renderTimeline(data) {
             timelineCont.innerHTML = '';
-
             const cps = parseCps(data.checkpoints);
             const statuses = computeStatuses(cps, data);
 
@@ -519,24 +852,20 @@
                 return;
             }
 
-            // Dynamic line heights — proportional to day span (min 40px, max 100px)
             const MIN_H  = 40;
             const MAX_H  = 100;
             const BASE_D = 7;
 
             cps.forEach((cp, idx) => {
                 const status = statuses[idx];
-
                 const item = document.createElement('div');
                 item.className = `timeline-item ${status}`;
                 item.style.animationDelay = `${idx * 0.12}s`;
 
-                // ── Dot ──
                 const dot = document.createElement('div');
                 dot.className = 'tl-dot';
                 item.appendChild(dot);
 
-                // ── Connecting line to next item ──
                 if (idx < cps.length - 1) {
                     const days = (cp.dateStart && cp.dateEnd)
                         ? Math.max(1, Math.round((new Date(cp.dateEnd + 'T00:00:00') - new Date(cp.dateStart + 'T00:00:00')) / 86400000))
@@ -552,22 +881,16 @@
                     lineFill.className = 'tl-line-fill';
                     lineFill.style.height = `${fillPct}%`;
 
-                    if (status === 'completed') {
-                        lineFill.style.background = 'var(--success)';
-                    } else if (status === 'active') {
-                        lineFill.style.background = 'var(--accent)';
-                    }
+                    if (status === 'completed') lineFill.style.background = 'var(--success)';
+                    else if (status === 'active') lineFill.style.background = 'var(--accent)';
 
                     lineTrack.appendChild(lineFill);
                     item.appendChild(lineTrack);
-
-                    // Reserve space for the line
                     item.style.paddingBottom = `${lineH}px`;
                 } else {
                     item.style.paddingBottom = '8px';
                 }
 
-                // ── Content ──
                 const content = document.createElement('div');
                 content.className = 'cp-content';
 
@@ -580,7 +903,6 @@
                 titleEl.appendChild(document.createTextNode(cp.title || ''));
                 content.appendChild(titleEl);
 
-                // Date range — show only friendly text, NEVER raw timestamps
                 const dateRange = fmtDateRange(cp);
                 if (dateRange) {
                     const dateEl = document.createElement('div');
@@ -595,7 +917,7 @@
         }
 
         // ══════════════════════════════════════════
-        //   FIREBASE
+        //   FIREBASE — TRACKING
         // ══════════════════════════════════════════
 
         function cleanupListener() {
@@ -609,7 +931,6 @@
             unsubscribe = onValue(ref(db, `orders/${trackNumber}`), (snapshot) => {
                 setLoading(false);
                 const data = snapshot.val();
-
                 if (data) {
                     displayTrack.textContent = trackNumber;
                     renderTimeline(data);
@@ -626,7 +947,7 @@
             });
         }
 
-        // ── Events ──
+        // ── Tracker Events ──
         let searchTimeout = null;
 
         searchForm.addEventListener('submit', (e) => {
@@ -651,6 +972,336 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => trackInput.focus(), 400);
+        });
+
+        // ══════════════════════════════════════════
+        //   SHOP STOREFRONT
+        // ══════════════════════════════════════════
+
+        const shopSection = $('shopSection');
+        const clientGrid  = $('clientProductsGrid');
+        const categoryFiltersEl = $('categoryFilters');
+        const sizeFiltersEl = $('sizeFilters');
+        const productModalOverlay = $('productModalOverlay');
+        const pmCloseBtn = $('pmClose');
+        const pmContent  = $('pmContent');
+
+        let allProducts = {};
+        let activeCategory = 'all';
+        let activeSize = 'all';
+        let selectedSize = null;
+
+        // Star SVG for ratings
+        const STAR_SVG = `<svg class="star-icon" width="12" height="12" viewBox="0 0 24 24" fill="#c8a750" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+
+        // Badge SVG icons
+        function badgeContent(badge) {
+            if (badge === 'hit') return `<svg width="9" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C12 2 6 10 6 14a6 6 0 0012 0c0-4-6-12-6-12z"/></svg> Хит`;
+            if (badge === 'sale') return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Sale`;
+            return `NEW`;
+        }
+
+        // Telegram SVG
+        const TG_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2.5L2 10.5l7 2.5 2.5 7L21.5 2.5z"/><line x1="9" y1="13" x2="15" y2="7"/></svg>`;
+
+        // Load products from Firebase
+        onValue(ref(db, 'products'), (snap) => {
+            allProducts = snap.val() || {};
+            const count = Object.keys(allProducts).length;
+            if (count > 0) {
+                shopSection.style.display = 'block';
+                buildCategoryFilters();
+                buildSizeFilters();
+                renderShopProducts();
+            } else {
+                shopSection.style.display = 'none';
+            }
+        });
+
+        function buildCategoryFilters() {
+            const cats = new Set();
+            Object.values(allProducts).forEach(p => { if (p.category) cats.add(p.category); });
+
+            categoryFiltersEl.innerHTML = '';
+
+            const allBtn = document.createElement('button');
+            allBtn.className = 'cat-chip active';
+            allBtn.dataset.cat = 'all';
+            allBtn.textContent = 'Все';
+            categoryFiltersEl.appendChild(allBtn);
+
+            cats.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'cat-chip';
+                btn.dataset.cat = cat;
+                btn.textContent = cat;
+                categoryFiltersEl.appendChild(btn);
+            });
+
+            categoryFiltersEl.querySelectorAll('.cat-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    categoryFiltersEl.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeCategory = btn.dataset.cat;
+                    activeSize = 'all';
+                    buildSizeFilters();
+                    renderShopProducts();
+                });
+            });
+        }
+
+        function buildSizeFilters() {
+            const sizes = new Set();
+            Object.values(allProducts).forEach(p => {
+                if (activeCategory !== 'all' && p.category !== activeCategory) return;
+                if (p.sizes) {
+                    p.sizes.split(',').map(s => s.trim()).filter(Boolean).forEach(s => sizes.add(s));
+                }
+            });
+
+            if (sizes.size === 0) {
+                sizeFiltersEl.style.display = 'none';
+                sizeFiltersEl.innerHTML = '';
+                return;
+            }
+
+            sizeFiltersEl.style.display = 'flex';
+            sizeFiltersEl.innerHTML = '';
+
+            const allBtn = document.createElement('button');
+            allBtn.className = 'size-chip active';
+            allBtn.dataset.size = 'all';
+            allBtn.textContent = 'Все размеры';
+            sizeFiltersEl.appendChild(allBtn);
+
+            sizes.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = 'size-chip';
+                btn.dataset.size = s;
+                btn.textContent = s;
+                sizeFiltersEl.appendChild(btn);
+            });
+
+            sizeFiltersEl.querySelectorAll('.size-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sizeFiltersEl.querySelectorAll('.size-chip').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeSize = btn.dataset.size;
+                    renderShopProducts();
+                });
+            });
+        }
+
+        function renderShopProducts() {
+            clientGrid.innerHTML = '';
+
+            const entries = Object.entries(allProducts).filter(([, p]) => {
+                if (activeCategory !== 'all' && p.category !== activeCategory) return false;
+                if (activeSize !== 'all') {
+                    const arr = (p.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
+                    if (!arr.includes(activeSize)) return false;
+                }
+                return true;
+            }).sort(([, a], [, b]) => {
+                // In stock first, then by createdAt desc
+                if ((a.inStock === false) !== (b.inStock === false)) return (a.inStock === false) ? 1 : -1;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            if (entries.length === 0) {
+                clientGrid.innerHTML = '<div class="shop-empty" style="grid-column:1/-1">Товары не найдены</div>';
+                return;
+            }
+
+            entries.forEach(([id, p], i) => {
+                const discount = p.oldPrice && p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+                const card = document.createElement('div');
+                card.className = 'product-card-client';
+                card.style.animation = `viewIn 0.4s ease-out ${Math.min(i, 8) * 0.06}s both`;
+
+                // Image wrap
+                const imgWrap = document.createElement('div');
+                imgWrap.className = 'pc-img-wrap';
+
+                if (p.imageUrl) {
+                    const img = document.createElement('img');
+                    img.className = 'pc-img';
+                    img.src = p.imageUrl;
+                    img.alt = p.name;
+                    img.loading = 'lazy';
+                    imgWrap.appendChild(img);
+                } else {
+                    const ph = document.createElement('div');
+                    ph.className = 'pc-img-placeholder';
+                    ph.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+                    imgWrap.appendChild(ph);
+                }
+
+                // Badge
+                if (p.badge && p.badge !== 'none') {
+                    const badge = document.createElement('div');
+                    badge.className = `pc-badge ${p.badge}`;
+                    badge.innerHTML = badgeContent(p.badge);
+                    imgWrap.appendChild(badge);
+                }
+
+                // OOS overlay
+                if (p.inStock === false) {
+                    const oos = document.createElement('div');
+                    oos.className = 'pc-oos-overlay';
+                    oos.textContent = 'НЕТ В НАЛИЧИИ';
+                    imgWrap.appendChild(oos);
+                }
+
+                card.appendChild(imgWrap);
+
+                // Body
+                const body = document.createElement('div');
+                body.className = 'pc-body';
+
+                // Price row
+                const priceRow = document.createElement('div');
+                priceRow.className = 'pc-price-row';
+
+                const priceEl = document.createElement('div');
+                priceEl.className = 'pc-price';
+                priceEl.textContent = Number(p.price).toLocaleString('ru-RU') + ' ₽';
+                priceRow.appendChild(priceEl);
+
+                if (p.oldPrice) {
+                    const oldEl = document.createElement('div');
+                    oldEl.className = 'pc-old-price';
+                    oldEl.textContent = Number(p.oldPrice).toLocaleString('ru-RU') + ' ₽';
+                    priceRow.appendChild(oldEl);
+                }
+
+                if (discount > 0) {
+                    const discEl = document.createElement('div');
+                    discEl.className = 'pc-discount';
+                    discEl.textContent = '-' + discount + '%';
+                    priceRow.appendChild(discEl);
+                }
+
+                body.appendChild(priceRow);
+
+                // Name
+                const nameEl = document.createElement('div');
+                nameEl.className = 'pc-name';
+                nameEl.textContent = p.name || '';
+                body.appendChild(nameEl);
+
+                // Rating
+                if (p.rating) {
+                    const ratingRow = document.createElement('div');
+                    ratingRow.className = 'pc-rating-row';
+                    ratingRow.innerHTML = `
+                        ${STAR_SVG}
+                        <span class="pc-rating-val">${Number(p.rating).toFixed(1)}</span>
+                        ${p.reviews ? `<span class="pc-reviews">(${p.reviews})</span>` : ''}
+                    `;
+                    body.appendChild(ratingRow);
+                }
+
+                card.appendChild(body);
+                card.addEventListener('click', () => openProductModal(p, id));
+                clientGrid.appendChild(card);
+            });
+        }
+
+        function openProductModal(p, id) {
+            selectedSize = null;
+            const discount = p.oldPrice && p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
+            const sizes = (p.sizes || '').split(',').map(s => s.trim()).filter(Boolean);
+            const isOOS = p.inStock === false;
+
+            pmContent.innerHTML = `
+                <div class="pm-img-wrap">
+                    ${p.imageUrl
+                        ? `<img class="pm-img" src="${p.imageUrl}" alt="${escHtml(p.name)}">`
+                        : `<div class="pm-img-placeholder"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
+                    }
+                </div>
+                <div class="pm-body">
+                    <div class="pm-name">${escHtml(p.name || '')}</div>
+                    ${p.category ? `<div class="pm-cat">${escHtml(p.category)}</div>` : ''}
+                    <div class="pm-price-row">
+                        <div class="pm-price">${Number(p.price).toLocaleString('ru-RU')} ₽</div>
+                        ${p.oldPrice ? `<div class="pm-old-price">${Number(p.oldPrice).toLocaleString('ru-RU')} ₽</div>` : ''}
+                        ${discount > 0 ? `<div class="pm-discount">-${discount}%</div>` : ''}
+                    </div>
+                    ${p.rating ? `
+                        <div class="pm-rating-row">
+                            ${STAR_SVG.replace('width="12" height="12"', 'width="16" height="16"')}
+                            <span style="font-weight:600;color:var(--text-primary)">${Number(p.rating).toFixed(1)}</span>
+                            ${p.reviews ? `<span style="color:var(--text-muted)">(${p.reviews} отзывов)</span>` : ''}
+                        </div>
+                    ` : ''}
+                    ${sizes.length > 0 ? `
+                        <div class="pm-sizes-label">Выберите размер</div>
+                        <div class="pm-sizes" id="pmSizes">
+                            ${sizes.map(s => `<button class="pm-size-btn" data-size="${escHtml(s)}">${escHtml(s)}</button>`).join('')}
+                        </div>
+                    ` : ''}
+                    <button class="pm-order-btn" id="pmOrderBtn" ${isOOS ? 'disabled' : ''}>
+                        ${isOOS ? `
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                            Нет в наличии
+                        ` : `
+                            ${TG_SVG}
+                            Заказать в Telegram
+                        `}
+                    </button>
+                    <div class="pm-no-size-hint" id="pmNoSizeHint">Пожалуйста, выберите размер</div>
+                </div>
+            `;
+
+            // Size selection
+            if (sizes.length > 0) {
+                pmContent.querySelectorAll('.pm-size-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        pmContent.querySelectorAll('.pm-size-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedSize = btn.dataset.size;
+                        $('pmNoSizeHint').style.display = 'none';
+                    });
+                });
+            }
+
+            // Order button
+            const orderBtn = pmContent.querySelector('#pmOrderBtn');
+            if (orderBtn && !isOOS) {
+                orderBtn.addEventListener('click', () => {
+                    if (sizes.length > 0 && !selectedSize) {
+                        $('pmNoSizeHint').style.display = 'block';
+                        return;
+                    }
+                    const text = encodeURIComponent(
+                        `Привет! Хочу заказать ${p.name}${selectedSize ? ', Размер: ' + selectedSize : ''}, Цена: ${Number(p.price).toLocaleString('ru-RU')}₽`
+                    );
+                    window.open(`https://t.me/ruletkaman?text=${text}`, '_blank');
+                });
+            }
+
+            productModalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProductModal() {
+            productModalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            selectedSize = null;
+        }
+
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        pmCloseBtn.addEventListener('click', closeProductModal);
+        productModalOverlay.addEventListener('click', (e) => {
+            if (e.target === productModalOverlay) closeProductModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && productModalOverlay.classList.contains('active')) closeProductModal();
         });
     </script>
 </body>
